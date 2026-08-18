@@ -924,7 +924,6 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
       --nav-glass-x: 50%;
       --nav-glass-y: 32%;
       position: relative;
-      isolation: isolate;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -936,9 +935,7 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
       overflow: clip;
       border: 1px solid rgba(255, 255, 255, .1);
       border-radius: 999px;
-      background: rgba(0, 0, 0, .4);
-      backdrop-filter: blur(18px) saturate(140%);
-      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      background: transparent;
       box-shadow:
         0 10px 24px rgba(0, 0, 0, .2),
         inset 0 1px 0 rgba(255, 255, 255, .12),
@@ -952,15 +949,32 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
       inset: 0;
       overflow: hidden;
       border-radius: inherit;
-      background: transparent;
-      backdrop-filter: url(#moc-nav-liquid-glass) blur(.5px) saturate(100%) contrast(1) brightness(1);
-      -webkit-backdrop-filter: url(#moc-nav-liquid-glass) blur(.5px) saturate(100%) contrast(1) brightness(1);
+      background: rgba(22, 11, 7, .22);
+      backdrop-filter: blur(10px) saturate(150%) contrast(1.06) brightness(.96);
+      -webkit-backdrop-filter: blur(10px) saturate(150%) contrast(1.06) brightness(.96);
+      backdrop-filter: url(#moc-navbar-refraction) blur(10px) saturate(150%) contrast(1.06) brightness(.96);
+      -webkit-backdrop-filter: url(#moc-navbar-refraction) blur(10px) saturate(150%) contrast(1.06) brightness(.96);
+    }
+
+    .nav-shell__gpu {
+      position: absolute;
+      z-index: 1;
+      inset: -1px;
+      overflow: hidden;
+      border-radius: inherit;
+      pointer-events: none;
       transform: translateZ(0);
+    }
+
+    .nav-shell__gpu-canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
     }
 
     .nav-shell::before {
       position: absolute;
-      z-index: 1;
+      z-index: 2;
       inset: 0;
       border-radius: inherit;
       padding: 1px;
@@ -974,7 +988,7 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
 
     .nav-shell::after {
       position: absolute;
-      z-index: 1;
+      z-index: 2;
       inset: 1px;
       border-radius: inherit;
       padding: 1px;
@@ -988,8 +1002,9 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
       mask-composite: exclude;
     }
 
-    .nav-shell > * { position: relative; z-index: 2; }
+    .nav-shell > * { position: relative; z-index: 3; }
     .nav-shell > .nav-shell__material { position: absolute; }
+    .nav-shell > .nav-shell__gpu { position: absolute; }
 
     .brand-link {
       display: grid;
@@ -2159,8 +2174,8 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
     }
 
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-      .nav-shell { background: rgba(22, 11, 7, .86); backdrop-filter: none; -webkit-backdrop-filter: none; }
-      .nav-shell__material { backdrop-filter: none; -webkit-backdrop-filter: none; }
+      .nav-shell { background: rgba(22, 11, 7, .86); }
+      .nav-shell__material { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
     }
 
     @media (max-width: 1023px) {
@@ -2170,8 +2185,6 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
     @media (prefers-reduced-transparency: reduce) {
       .nav-shell {
         background: rgba(40, 27, 20, .94);
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
       }
 
       .nav-shell__material {
@@ -2182,6 +2195,7 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
 
       .nav-shell::before,
       .nav-shell::after { display: none; }
+      .nav-shell__gpu { display: none; }
       .nav-order { background: rgba(255, 255, 255, .16); }
     }
 
@@ -2200,8 +2214,8 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
       }
 
       .nav-shell__material {
-        backdrop-filter: url(#moc-nav-liquid-glass) blur(.5px) saturate(100%) contrast(1) brightness(1);
-        -webkit-backdrop-filter: url(#moc-nav-liquid-glass) blur(.5px) saturate(100%) contrast(1) brightness(1);
+        backdrop-filter: blur(10px) saturate(150%) contrast(1.06) brightness(.96);
+        -webkit-backdrop-filter: blur(10px) saturate(150%) contrast(1.06) brightness(.96);
       }
     }
 

@@ -1,10 +1,10 @@
 "use client";
 
-import type { PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
+import { LiquidGlassNavbar } from "@/components/ui/LiquidGlassNavbar";
 import { instagramUrl } from "@/lib/content/minus-one";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -19,100 +19,6 @@ const wallColumns = [...wallSets, ...wallSets, wallSets[0]];
 const wallCopyCount = 4;
 
 type LightboxState = { src: string; alt: string } | null;
-
-function CornerArrow({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M7 17 17 7" />
-      <path d="M7 7h10v10" />
-    </svg>
-  );
-}
-
-function InstagramGlyph() {
-  return (
-    <svg className="nav-order__glyph nav-order__glyph--instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-    </svg>
-  );
-}
-
-function LiquidGlassDefs() {
-  const [displacementMap, setDisplacementMap] = useState<string | null>(null);
-
-  useEffect(() => {
-    const nav = document.querySelector<HTMLElement>(".nav-shell");
-    if (!nav) return;
-
-    const roundedRectSdf = (x: number, y: number, width: number, height: number, radius: number) => {
-      const qx = Math.abs(x - width / 2) - (width / 2 - radius);
-      const qy = Math.abs(y - height / 2) - (height / 2 - radius);
-      return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - radius;
-    };
-
-    const updateDisplacementMap = () => {
-      const rect = nav.getBoundingClientRect();
-      const density = window.innerWidth < 700 ? 0.55 : 1;
-      const width = Math.max(96, Math.round(rect.width * density));
-      const height = Math.max(24, Math.round(rect.height * density));
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const context = canvas.getContext("2d");
-      if (!context) return;
-
-      const image = context.createImageData(width, height);
-      const radius = Math.min(height / 2, width * 0.18);
-      const edgeRange = Math.max(3, Math.min(width, height) * 0.3);
-
-      for (let y = 0; y < height; y += 1) {
-        for (let x = 0; x < width; x += 1) {
-          const sdf = roundedRectSdf(x + 0.5, y + 0.5, width, height, radius);
-          const edge = Math.max(0, Math.min(1, 1 - Math.max(0, -sdf) / edgeRange));
-          const nx = (x + 0.5 - width / 2) / Math.max(1, width / 2);
-          const ny = (y + 0.5 - height / 2) / Math.max(1, height / 2);
-          const corner = Math.min(1, Math.hypot(nx, ny) / Math.SQRT2);
-          const strength = edge * (7 + corner * 15);
-          const index = (y * width + x) * 4;
-          image.data[index] = Math.max(0, Math.min(255, Math.round(128 + nx * strength)));
-          image.data[index + 1] = Math.max(0, Math.min(255, Math.round(128 + ny * strength)));
-          image.data[index + 2] = 128;
-          image.data[index + 3] = 255;
-        }
-      }
-
-      context.putImageData(image, 0, 0);
-      setDisplacementMap(canvas.toDataURL("image/png"));
-    };
-
-    updateDisplacementMap();
-    const observer = new ResizeObserver(updateDisplacementMap);
-    observer.observe(nav);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <svg className="liquid-glass-defs" aria-hidden="true" focusable="false" width="0" height="0">
-      <defs>
-        <filter id="moc-nav-liquid-glass" colorInterpolationFilters="sRGB">
-          <feImage
-            id="moc-nav-displacement-map"
-            href={displacementMap ?? undefined}
-            preserveAspectRatio="none"
-            x="0"
-            y="0"
-            width="100%"
-            height="100%"
-            result="edge-map"
-          />
-          <feDisplacementMap in="SourceGraphic" in2="edge-map" scale="18" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </defs>
-    </svg>
-  );
-}
 
 function HeroWall() {
   return (
@@ -146,19 +52,6 @@ export function MocSourcePage() {
   const lightboxCloseRef = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [lightbox, setLightbox] = useState<LightboxState>(null);
-
-  const handleNavPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 100;
-    const y = ((event.clientY - rect.top) / rect.height) * 100;
-    event.currentTarget.style.setProperty("--nav-glass-x", `${x.toFixed(2)}%`);
-    event.currentTarget.style.setProperty("--nav-glass-y", `${y.toFixed(2)}%`);
-  };
-
-  const handleNavPointerLeave = (event: ReactPointerEvent<HTMLDivElement>) => {
-    event.currentTarget.style.setProperty("--nav-glass-x", "50%");
-    event.currentTarget.style.setProperty("--nav-glass-y", "32%");
-  };
 
   useEffect(() => {
     document.body.classList.toggle("menu-is-open", menuOpen);
@@ -335,23 +228,7 @@ export function MocSourcePage() {
   return (
     <>
       <header className="site-header">
-        <LiquidGlassDefs />
-        <div className="nav-shell" aria-label="Primary navigation" onPointerMove={handleNavPointerMove} onPointerLeave={handleNavPointerLeave}>
-          <div className="nav-shell__material" aria-hidden="true" />
-          <a className="brand-link" href="#top" aria-label="Minus One Coffee home">
-            <img src={asset("moc-logo.png")} alt="MOC logo" />
-          </a>
-          <a className="nav-order" href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Order via Instagram direct message">
-            <span className="nav-order__label">Order via DM</span>
-            <span className="nav-order__icon" aria-hidden="true">
-              <CornerArrow className="nav-order__glyph nav-order__glyph--arrow" />
-              <InstagramGlyph />
-            </span>
-          </a>
-          <button ref={menuToggleRef} className="menu-toggle" type="button" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} aria-controls="site-menu" onClick={() => setMenuOpen((open) => !open)}>
-            <span className="menu-toggle__icon" aria-hidden="true"><span className="menu-toggle__line" /></span>
-          </button>
-        </div>
+        <LiquidGlassNavbar menuOpen={menuOpen} menuToggleRef={menuToggleRef} onToggleMenu={() => setMenuOpen((open) => !open)} />
       </header>
 
       <aside className="menu-panel" id="site-menu" aria-hidden={!menuOpen}>
