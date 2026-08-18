@@ -371,7 +371,7 @@ export function MocSourcePage() {
           ))}
         </nav>
         <div className="menu-panel__bottom">
-          <p>JB / Kuala Lumpur</p>
+          <p>Johor Bahru</p>
           <p className="menu-panel__status">Open Mon - Sat</p>
         </div>
       </aside>
@@ -380,7 +380,7 @@ export function MocSourcePage() {
         <section className="hero" aria-labelledby="hero-title">
           <HeroWall />
           <div className="hero__top">
-            <p className="hero__eyebrow">Minus One Coffee / JB Permas</p>
+            <p className="hero__eyebrow">Minus One Coffee / Johor Bahru</p>
             <h1 className="hero__headline" id="hero-title"><span>Minus</span><span className="accent">One</span><span>Coffee</span></h1>
             <p className="hero__copy">Small-batch coffee, matcha, and chocolate made fresh at home.</p>
             <a className="button button--copper" href={instagramUrl} target="_blank" rel="noreferrer">Shop via DM <span aria-hidden="true">↗</span></a>
@@ -436,7 +436,7 @@ export function MocSourcePage() {
             <p className="section-kicker">The studio note</p>
             <h2 className="manifesto__quote" id="story-title">Made in small batches, shared <em>fresh.</em></h2>
             <div className="manifesto__details">
-              <div className="detail-item"><span className="detail-item__label">Place</span><span className="detail-item__value">JB / Kuala Lumpur</span></div>
+              <div className="detail-item"><span className="detail-item__label">Place</span><span className="detail-item__value">Johor Bahru</span></div>
               <div className="detail-item"><span className="detail-item__label">Hours</span><span className="detail-item__value">Monday - Saturday / 8:00 - 17:00</span></div>
               <div className="detail-item"><span className="detail-item__label">Order</span><span className="detail-item__value">DM @minus.onecoffee</span></div>
             </div>

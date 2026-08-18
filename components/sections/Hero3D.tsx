@@ -14,7 +14,7 @@ export function Hero3D() {
           <img className="hero-logo" src="/assets/moc-logo-original.png" alt="MOC logo" />
           <span className="hero-logo-caption">minus one coffee / small batch studio</span>
         </div>
-        <span className="hero-edition">home batch no. 01 / kuala lumpur</span>
+        <span className="hero-edition">home batch no. 01 / Johor Bahru</span>
       </div>
       <div className="hero-copy">
         <p className="eyebrow">Small batch / made at home</p>
