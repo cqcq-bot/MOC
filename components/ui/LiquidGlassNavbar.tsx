@@ -33,9 +33,11 @@ const fragmentShader = /* glsl */ `
 
   uniform vec2 uPointer;
   uniform vec2 uResolution;
-  uniform float uTime;
   uniform float uHover;
-  uniform float uMotion;
+  uniform float uRefraction;
+  uniform float uDepth;
+  uniform float uFrost;
+  uniform float uLightIntensity;
   varying vec2 vUv;
 
   float roundedBoxSdf(vec2 point, vec2 bounds, float radius) {
@@ -43,32 +45,55 @@ const fragmentShader = /* glsl */ `
     return min(max(delta.x, delta.y), 0.0) + length(max(delta, 0.0)) - radius;
   }
 
+  vec2 roundedBoxNormal(vec2 point, vec2 bounds, float radius) {
+    vec2 corner = max(abs(point) - (bounds - radius), 0.0);
+    float cornerLength = length(corner);
+    if (cornerLength > 0.0001) {
+      return sign(point) * corner / cornerLength;
+    }
+    return vec2(0.0, sign(point.y));
+  }
+
   void main() {
     float aspect = uResolution.x / max(uResolution.y, 1.0);
     vec2 point = vec2((vUv.x - 0.5) * aspect, vUv.y - 0.5);
-    float distanceToEdge = roundedBoxSdf(point, vec2(aspect * 0.5, 0.5), 0.5);
-    float edge = 1.0 - smoothstep(0.0, 0.075, -distanceToEdge);
-    float innerEdge = 1.0 - smoothstep(0.018, 0.145, -distanceToEdge);
+    vec2 bounds = vec2(aspect * 0.5, 0.5);
+    float radius = 0.5;
+    float distanceToEdge = roundedBoxSdf(point, bounds, radius);
+    float edgeDistance = max(-distanceToEdge, 0.0);
+    float edgeWidth = mix(0.12, 0.2, uDepth);
+    float edge = 1.0 - smoothstep(0.0, edgeWidth, edgeDistance);
+    float innerEdge = 1.0 - smoothstep(edgeWidth * 0.22, edgeWidth * 1.55, edgeDistance);
+    float edgeCore = 1.0 - smoothstep(0.0, edgeWidth * 0.38, edgeDistance);
+    vec2 normal = roundedBoxNormal(point, bounds, radius);
+    float cornerDistance = length(max(abs(point) - vec2(max(bounds.x - radius, 0.0), 0.0), 0.0));
+    float corner = smoothstep(0.05, 0.48, cornerDistance);
 
     vec2 pointer = vec2((uPointer.x - 0.5) * aspect, uPointer.y - 0.5);
     vec2 pointerDelta = point - pointer;
-    float pointerLight = exp(-dot(pointerDelta, pointerDelta) * 30.0);
-    float pointerHalo = exp(-dot(pointerDelta, pointerDelta) * 7.0);
+    float pointerLight = exp(-dot(pointerDelta, pointerDelta) * 38.0);
+    float pointerRefraction = exp(-dot(pointerDelta, pointerDelta) * 10.0);
+    vec2 lightDirection = normalize(vec2(-0.44, 0.88));
+    float rimLight = pow(max(dot(normal, lightDirection), 0.0), 2.2) * edge;
+    float reflectedLight = pow(max(dot(reflect(-lightDirection, normal), vec2(0.0, 1.0)), 0.0), 5.0) * edge;
+    float cornerLens = corner * edge * (0.72 + 0.28 * edgeCore);
+    float refractionBand = edge * (0.56 + 0.44 * corner) * uRefraction;
+    float thickness = mix(0.55, 1.0, uDepth);
 
-    float liquid = sin((point.x * 12.0 + point.y * 8.0) + uTime * 0.27) * 0.5 + 0.5;
-    liquid *= sin((point.x * -7.0 + point.y * 15.0) - uTime * 0.19) * 0.5 + 0.5;
-    liquid = (liquid - 0.25) * uMotion;
+    vec3 neutralLight = vec3(0.98, 0.97, 0.94);
+    vec3 warmLight = vec3(1.0, 0.84, 0.62);
+    vec3 color = neutralLight * (refractionBand * 0.18 * thickness);
+    color += neutralLight * (rimLight * uLightIntensity * 0.5 + reflectedLight * uLightIntensity * 0.32);
+    color += warmLight * (cornerLens * uLightIntensity * 0.22);
+    color += neutralLight * pointerLight * (0.09 + uHover * 0.06);
+    color += neutralLight * pointerRefraction * edge * (0.035 + uHover * 0.025);
 
-    vec3 warmReflection = vec3(0.98, 0.88, 0.74);
-    vec3 copperReflection = vec3(0.74, 0.37, 0.20);
-    vec3 dispersion = vec3(1.0, 0.62, 0.36) * edge * (0.018 + pointerHalo * 0.028);
-    vec3 color = warmReflection * (edge * (0.17 + liquid * 0.045));
-    color += copperReflection * (innerEdge * 0.06 + liquid * 0.018);
-    color += warmReflection * pointerLight * (0.095 + uHover * 0.055);
-    color += dispersion;
-
-    float alpha = edge * 0.33 + innerEdge * 0.055 + pointerLight * (0.12 + uHover * 0.08) + liquid * 0.035;
-    gl_FragColor = vec4(color, clamp(alpha, 0.0, 0.44));
+    // A restrained center veil keeps the surface readable without turning it opaque.
+    color += vec3(0.92, 0.9, 0.86) * uFrost * 0.12;
+    float alpha = edge * (0.16 + uDepth * 0.09) + innerEdge * 0.025;
+    alpha += rimLight * uLightIntensity * 0.12 + cornerLens * 0.04;
+    alpha += pointerLight * (0.06 + uHover * 0.05) + uFrost * 0.02;
+    gl_FragColor = vec4(color, clamp(alpha, 0.0, 0.42));
   }
 `;
 
@@ -97,9 +122,11 @@ function OpticalSurface({ pointer, hovering }: OpticalSurfaceProps) {
     () => ({
       uPointer: { value: new THREE.Vector2(0.5, 0.32) },
       uResolution: { value: new THREE.Vector2(420, 60) },
-      uTime: { value: 0 },
       uHover: { value: 0 },
-      uMotion: { value: 1 }
+      uRefraction: { value: 0.6 },
+      uDepth: { value: 0.8 },
+      uFrost: { value: 0.06 },
+      uLightIntensity: { value: 0.45 }
     }),
     []
   );
@@ -111,7 +138,6 @@ function OpticalSurface({ pointer, hovering }: OpticalSurfaceProps) {
     (shader.uniforms.uPointer.value as THREE.Vector2).lerp(pointer.current, Math.min(1, delta * 9));
     shader.uniforms.uHover.value = THREE.MathUtils.damp(shader.uniforms.uHover.value, hovering.current, 10, delta);
     (shader.uniforms.uResolution.value as THREE.Vector2).set(state.size.width, state.size.height);
-    shader.uniforms.uTime.value = state.clock.getElapsedTime();
   });
 
   return (
@@ -191,11 +217,15 @@ export function LiquidGlassNavbar({ menuOpen, menuToggleRef, onToggleMenu }: Liq
     <>
       <svg className="liquid-glass-defs" aria-hidden="true" focusable="false" width="0" height="0">
         <defs>
-          <filter id="moc-navbar-refraction" colorInterpolationFilters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="0.009 0.014" numOctaves="1" seed="7" result="surface-noise">
-              <animate attributeName="baseFrequency" dur="20s" values="0.009 0.014;0.011 0.009;0.009 0.014" repeatCount="indefinite" />
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" in2="surface-noise" scale="5" xChannelSelector="R" yChannelSelector="G" />
+          <filter id="moc-navbar-refraction" colorInterpolationFilters="sRGB" x="-12%" y="-60%" width="124%" height="220%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="alpha-blur" />
+            <feComposite in="alpha-blur" in2="SourceAlpha" operator="out" result="edge-map" />
+            <feFlood floodColor="#808080" result="neutral-map" />
+            <feComposite in="neutral-map" in2="SourceAlpha" operator="in" result="surface-map" />
+            <feFlood floodColor="#bcbcbc" result="bright-edge-map" />
+            <feComposite in="bright-edge-map" in2="edge-map" operator="in" result="bright-edge" />
+            <feComposite in="bright-edge" in2="surface-map" operator="over" result="optical-map" />
+            <feDisplacementMap in="SourceGraphic" in2="optical-map" scale="16" xChannelSelector="R" yChannelSelector="G" />
           </filter>
         </defs>
       </svg>

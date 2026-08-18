@@ -933,13 +933,14 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
       margin: 0 auto;
       padding: 6px;
       overflow: clip;
-      border: 1px solid rgba(255, 255, 255, .1);
+      border: 1px solid rgba(255, 255, 255, .08);
       border-radius: 999px;
       background: transparent;
+      isolation: isolate;
       box-shadow:
         0 10px 24px rgba(0, 0, 0, .2),
-        inset 0 1px 0 rgba(255, 255, 255, .12),
-        inset 0 -1px 0 rgba(0, 0, 0, .16);
+        inset 0 1px 0 rgba(255, 255, 255, .14),
+        inset 0 -1px 0 rgba(0, 0, 0, .2);
       pointer-events: auto;
     }
 
@@ -949,11 +950,9 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
       inset: 0;
       overflow: hidden;
       border-radius: inherit;
-      background: rgba(22, 11, 7, .22);
-      backdrop-filter: blur(10px) saturate(150%) contrast(1.06) brightness(.96);
-      -webkit-backdrop-filter: blur(10px) saturate(150%) contrast(1.06) brightness(.96);
-      backdrop-filter: url(#moc-navbar-refraction) blur(10px) saturate(150%) contrast(1.06) brightness(.96);
-      -webkit-backdrop-filter: url(#moc-navbar-refraction) blur(10px) saturate(150%) contrast(1.06) brightness(.96);
+      background: rgba(255, 255, 255, .055);
+      backdrop-filter: url(#moc-navbar-refraction) blur(6px) saturate(148%) contrast(1.08) brightness(.98);
+      -webkit-backdrop-filter: url(#moc-navbar-refraction) blur(6px) saturate(148%) contrast(1.08) brightness(.98);
     }
 
     .nav-shell__gpu {
@@ -978,7 +977,7 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
       inset: 0;
       border-radius: inherit;
       padding: 1px;
-      background: linear-gradient(118deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, .035) 40%, rgba(255, 255, 255, .05) 68%, rgba(255, 255, 255, .1));
+      background: linear-gradient(118deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .025) 40%, rgba(255, 255, 255, .04) 68%, rgba(255, 255, 255, .08));
       content: "";
       pointer-events: none;
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -995,7 +994,7 @@ h3 { font-size: clamp(1.5rem, 2vw, 2.25rem); margin-block-end: 0; }
       background: radial-gradient(circle at var(--nav-glass-x) var(--nav-glass-y), rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 34%);
       content: "";
       mix-blend-mode: screen;
-      opacity: .2;
+      opacity: .16;
       pointer-events: none;
       -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
       -webkit-mask-composite: xor;
