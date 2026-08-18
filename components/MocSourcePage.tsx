@@ -1,5 +1,6 @@
 "use client";
 
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -36,6 +37,21 @@ function InstagramGlyph() {
   );
 }
 
+function LiquidGlassDefs() {
+  return (
+    <svg className="liquid-glass-defs" aria-hidden="true" focusable="false" width="0" height="0">
+      <defs>
+        <filter id="moc-nav-liquid-glass" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.011 0.017" numOctaves="2" seed="7" result="noise">
+            <animate attributeName="baseFrequency" dur="16s" values="0.011 0.017;0.018 0.010;0.011 0.017" repeatCount="indefinite" />
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+    </svg>
+  );
+}
+
 function HeroWall() {
   return (
     <div className="hero__wall" aria-hidden="true">
@@ -68,6 +84,19 @@ export function MocSourcePage() {
   const lightboxCloseRef = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [lightbox, setLightbox] = useState<LightboxState>(null);
+
+  const handleNavPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    event.currentTarget.style.setProperty("--nav-glass-x", `${x.toFixed(2)}%`);
+    event.currentTarget.style.setProperty("--nav-glass-y", `${y.toFixed(2)}%`);
+  };
+
+  const handleNavPointerLeave = (event: ReactPointerEvent<HTMLDivElement>) => {
+    event.currentTarget.style.setProperty("--nav-glass-x", "50%");
+    event.currentTarget.style.setProperty("--nav-glass-y", "32%");
+  };
 
   useEffect(() => {
     document.body.classList.toggle("menu-is-open", menuOpen);
@@ -244,7 +273,8 @@ export function MocSourcePage() {
   return (
     <>
       <header className="site-header">
-        <div className="nav-shell" aria-label="Primary navigation">
+        <LiquidGlassDefs />
+        <div className="nav-shell" aria-label="Primary navigation" onPointerMove={handleNavPointerMove} onPointerLeave={handleNavPointerLeave}>
           <a className="brand-link" href="#top" aria-label="Minus One Coffee home">
             <img src={asset("moc-logo.png")} alt="MOC logo" />
           </a>
@@ -376,7 +406,13 @@ export function MocSourcePage() {
 function MenuPlan({ index, title, note, subtitle, items, featured = false }: { index: string; title: string; note: string; subtitle: string; items: string[][]; featured?: boolean }) {
   return (
     <article className={`menu-plan${featured ? " menu-plan--featured" : ""}`}>
-      <div className="menu-plan__top"><div><span className="menu-plan__index">{index} / Series</span><h3 className="menu-plan__title">{title}</h3></div><span className="menu-plan__note">{note}</span></div>
+      <div className="menu-plan__top">
+        <div className="menu-plan__topline">
+          <span className="menu-plan__index">{index} / Series</span>
+          <span className="menu-plan__note">{note}</span>
+        </div>
+        <h3 className="menu-plan__title">{title}</h3>
+      </div>
       <p className="menu-plan__subtitle">{subtitle}</p>
       <ul className="menu-list">{items.map(([name, price]) => <li key={name}><span>{name}</span><span>{price}</span></li>)}</ul>
       <a className="menu-plan__cta" href={instagramUrl} target="_blank" rel="noreferrer">Order {title.toLowerCase()} <span aria-hidden="true">↗</span></a>
