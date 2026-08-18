@@ -16,7 +16,7 @@ export function MocLoadingIntro() {
       progressTimer = window.setInterval(() => {
         setProgress((current) => Math.min(100, current + (prefersReducedMotion ? 5 : 2)));
       }, prefersReducedMotion ? 16 : 24);
-    }, prefersReducedMotion ? 0 : 1120);
+    }, 0);
     const exitTimer = window.setTimeout(() => setIsExiting(true), prefersReducedMotion ? 1400 : 2860);
     const removeTimer = window.setTimeout(() => {
       setIsVisible(false);
@@ -39,20 +39,9 @@ export function MocLoadingIntro() {
       className={`moc-loader${isExiting ? " is-exiting" : ""}`}
       role="status"
       aria-live="polite"
-      aria-label="Loading MOC"
+      aria-label="Loading Minus One Coffee"
     >
-      <div className="moc-loader-mark" aria-hidden="true">
-        <div className="moc-loader-stage">
-          <img className="moc-loader-person" src="/assets/moc-person-original.png" alt="" />
-          <div className="moc-loader-word">
-            <span className="moc-loader-letter moc-loader-letter-m" />
-            <span className="moc-loader-letter moc-loader-letter-o" />
-            <span className="moc-loader-letter moc-loader-letter-c" />
-          </div>
-        </div>
-      </div>
       <p className="moc-loader-name">Minus One Coffee</p>
-      <p className="moc-loader-note">small batch studio</p>
       <div className="moc-loader-progress" aria-label={`${progress}% loaded`}>
         <span className="moc-loader-progress-track" aria-hidden="true">
           <span className="moc-loader-progress-bar" style={{ transform: `scaleX(${progress / 100})` }} />
